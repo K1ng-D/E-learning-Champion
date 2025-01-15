@@ -7,7 +7,7 @@ import { doc, setDoc } from "firebase/firestore";
 export default function RegisterView() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("mahasiswa");
+  const [role, setRole] = useState("siswa");
   const [name, setName] = useState(""); // Tambahkan state untuk nama
 
   const handleRegister = async () => {
@@ -74,7 +74,7 @@ export default function RegisterView() {
             onChange={(e) => setRole(e.target.value)}
             className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
-            <option value="mahasiswa">Siswa</option>
+            <option value="siswa">Siswa</option>
           </select>
 
           {/* Tombol Register */}

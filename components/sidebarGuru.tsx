@@ -4,13 +4,13 @@ import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
-export function SidebarDosen() {
+export function SidebarGuru() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter(); // Menggunakan useRouter untuk navigasi
 
   // Sidebar hanya muncul pada path tertentu
-  if (!pathname.startsWith("/dashboard/dosen")) {
+  if (!pathname.startsWith("/dashboard/guru")) {
     return null;
   }
 
@@ -30,19 +30,19 @@ export function SidebarDosen() {
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <h2 className="text-2xl font-semibold text-white mb-8">Dosen Panel</h2>
+        <h2 className="text-2xl font-semibold text-white mb-8">Panel Guru</h2>
         <ul className="space-y-6">
           {[
-            { href: "/dashboard/dosen", label: "Dashboard" },
+            { href: "/dashboard/guru", label: "Dashboard" },
             {
-              href: "/dashboard/dosen/daftar-mahasiswa",
+              href: "/dashboard/guru/daftar-siswa",
               label: "Daftar Siswa-Siswi",
             },
             {
-              href: "/dashboard/dosen/materi-pembelajaran",
+              href: "/dashboard/guru/materi-pembelajaran",
               label: "Materi Pembelajaran",
             },
-            { href: "/dashboard/dosen/forum-diskusi", label: "Forum Diskusi" },
+            { href: "/dashboard/guru/forum-diskusi", label: "Forum Diskusi" },
           ].map((item) => (
             <li key={item.href}>
               <Link

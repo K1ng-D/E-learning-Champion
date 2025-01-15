@@ -28,7 +28,7 @@ interface ZoomLink {
   description: string;
 }
 
-export default function MahasiswaDashboard() {
+export default function SiswaDashboard() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [loading, setLoading] = useState(true);
   const [materiList, setMateriList] = useState<Materi[]>([]);
@@ -56,7 +56,7 @@ export default function MahasiswaDashboard() {
         const userRef = doc(db, "users", user.uid);
         const userDoc = await getDoc(userRef);
 
-        if (userDoc.exists() && userDoc.data()?.role === "mahasiswa") {
+        if (userDoc.exists() && userDoc.data()?.role === "siswa") {
           setIsAuthorized(true);
 
           const materiSnapshot = await getDocs(collection(db, "materials"));

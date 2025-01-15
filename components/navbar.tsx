@@ -21,7 +21,7 @@ export default function Navbar() {
     };
   }, []);
 
-  if (!pathname.startsWith("/dashboard/mahasiswa")) {
+  if (!pathname.startsWith("/dashboard/siswa")) {
     return null;
   }
 
@@ -48,7 +48,7 @@ export default function Navbar() {
         <nav className="max-w-screen-xl px-6 sm:px-8 lg:px-16 mx-auto">
           <div className="flex items-center justify-between py-3 sm:py-4">
             <Link
-              href="/dashboard/mahasiswa"
+              href="/dashboard/siswa"
               onClick={() => setActiveLink("beranda")}
               className="cursor-pointer flex gap-2 font-bold items-center text-[20px]"
             >
@@ -94,7 +94,7 @@ export default function Navbar() {
                 } transition-all duration-300`}
               >
                 <Link
-                  href="/dashboard/mahasiswa"
+                  href="/dashboard/siswa"
                   onClick={() => setActiveLink("beranda")}
                 >
                   Beranda
@@ -109,7 +109,7 @@ export default function Navbar() {
                 } transition-all duration-300`}
               >
                 <Link
-                  href="/dashboard/mahasiswa/materi"
+                  href="/dashboard/siswa/materi"
                   onClick={() => setActiveLink("materi")}
                 >
                   Materi
@@ -124,7 +124,7 @@ export default function Navbar() {
                 } transition-all duration-300`}
               >
                 <Link
-                  href="/dashboard/mahasiswa/diskusi"
+                  href="/dashboard/siswa/diskusi"
                   onClick={() => setActiveLink("diskusi")}
                 >
                   Diskusi
@@ -147,7 +147,7 @@ export default function Navbar() {
                 }`}
               >
                 <Link
-                  href="/dashboard/mahasiswa"
+                  href="/dashboard/siswa"
                   onClick={() => {
                     setActiveLink("beranda");
                     setIsOpen(false);
@@ -162,7 +162,7 @@ export default function Navbar() {
                 }`}
               >
                 <Link
-                  href="/dashboard/mahasiswa/materi"
+                  href="/dashboard/siswa/materi"
                   onClick={() => {
                     setActiveLink("materi");
                     setIsOpen(false);
@@ -177,7 +177,7 @@ export default function Navbar() {
                 }`}
               >
                 <Link
-                  href="/dashboard/mahasiswa/diskusi"
+                  href="/dashboard/siswa/diskusi"
                   onClick={() => {
                     setActiveLink("diskusi");
                     setIsOpen(false);

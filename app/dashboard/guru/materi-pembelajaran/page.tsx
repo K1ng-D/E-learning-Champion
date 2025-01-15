@@ -1,4 +1,4 @@
-import UploadMaterial from "@/components/view/dashboardView/dosen/materiPembelajaranView";
+import UploadMaterial from "@/components/view/dashboardView/guru/materiPembelajaranView";
 import React from "react";
 
 export default function page() {

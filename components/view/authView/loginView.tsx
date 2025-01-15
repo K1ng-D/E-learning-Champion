@@ -17,10 +17,10 @@ export default function LoginView() {
       );
       const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
       const role = userDoc.data()?.role;
-      if (role === "mahasiswa") {
-        window.location.href = "/dashboard/mahasiswa";
+      if (role === "siswa") {
+        window.location.href = "/dashboard/siswa";
       } else {
-        window.location.href = "/dashboard/dosen";
+        window.location.href = "/dashboard/guru";
       }
     } catch (error) {
       console.error(error);

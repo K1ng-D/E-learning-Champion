@@ -52,10 +52,7 @@ export default function MaterialView() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl px-4">
         {materiList.map((materi) => (
-          <Link
-            key={materi.id}
-            href={`/dashboard/mahasiswa/materi/${materi.id}`}
-          >
+          <Link key={materi.id} href={`/dashboard/siswa/materi/${materi.id}`}>
             <div className="p-6 bg-white rounded-lg shadow-md min-w-[300px] cursor-pointer hover:shadow-lg transition-shadow duration-300 h-full">
               <img
                 src={materi.imageUrl}

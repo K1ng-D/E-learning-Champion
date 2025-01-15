@@ -99,7 +99,7 @@ const UploadMaterial = () => {
         {/* Input Nama Dosen */}
         <input
           type="text"
-          placeholder="Nama Dosen"
+          placeholder="Nama Guru"
           value={lecturer}
           onChange={(e) => setLecturer(e.target.value)}
           className="w-full p-2 border rounded-lg"

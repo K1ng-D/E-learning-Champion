@@ -28,7 +28,7 @@ interface ZoomLink {
   description: string; // Add description to ZoomLink
 }
 
-export default function DosenDashboard() {
+export default function GuruDashboard() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [loading, setLoading] = useState(true);
   const [materiList, setMateriList] = useState<Materi[]>([]);
@@ -58,7 +58,7 @@ export default function DosenDashboard() {
         const userRef = doc(db, "users", user.uid);
         const userDoc = await getDoc(userRef);
 
-        if (userDoc.exists() && userDoc.data()?.role === "dosen") {
+        if (userDoc.exists() && userDoc.data()?.role === "guru") {
           setIsAuthorized(true);
 
           // Ambil data materi dan ZoomLink hanya jika authorized
@@ -137,8 +137,8 @@ export default function DosenDashboard() {
       >
         Logout
       </button>
-      <h1 className="text-4xl font-bold">Dashboard Dosen</h1>
-      <p className="mt-4">Selamat datang di halaman dashboard dosen.</p>
+      <h1 className="text-4xl font-bold">Dashboard Guru</h1>
+      <p className="mt-4">Selamat datang di halaman dashboard guru.</p>
 
       <div className="mt-8 w-full max-w-4xl space-y-6">
         <h2 className="text-2xl font-semibold">Daftar Materi</h2>

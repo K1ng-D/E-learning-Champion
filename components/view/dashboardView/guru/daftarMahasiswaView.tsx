@@ -28,7 +28,7 @@ const UsersPage = () => {
     const fetchUsers = async () => {
       const db = getFirestore(app);
       const usersCollection = collection(db, "users");
-      const q = query(usersCollection, where("role", "==", "mahasiswa"));
+      const q = query(usersCollection, where("role", "==", "siswa"));
 
       const querySnapshot = await getDocs(q);
       const fetchedUsers: User[] = [];
@@ -39,7 +39,7 @@ const UsersPage = () => {
           uid: doc.id,
           email: userData.email,
           name: userData.name || "-",
-          role: userData.role || "mahasiswa",
+          role: userData.role || "siswa",
         });
       });
 
@@ -87,7 +87,6 @@ const UsersPage = () => {
               <th className="border p-2">UID</th>
               <th className="border p-2">Email</th>
               <th className="border p-2">Nama</th>
-
               <th className="border p-2">Aksi</th>
             </tr>
           </thead>
