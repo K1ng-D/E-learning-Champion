@@ -12,8 +12,8 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "EcoSmart",
-  description: "EcoSmart",
+  title: "LEARNING CHAMPION",
+  description: "LEARNING CHAMPION",
 };
 
 export default function RootLayout({
