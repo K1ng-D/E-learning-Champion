@@ -1,9 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "@/lib/firebaseConfig";
+import { usePathname, useRouter } from "next/navigation";
+import { collection, getDocs, doc, getDoc } from "firebase/firestore";
+import { db, auth } from "@/lib/firebaseConfig";
 import { FaUser } from "react-icons/fa";
+import { onAuthStateChanged } from "firebase/auth";
 
 const formatDate = (dateString: string) => {
   const options: Intl.DateTimeFormatOptions = {
@@ -17,35 +18,66 @@ const formatDate = (dateString: string) => {
 
 const NewsDetail = () => {
   const pathname = usePathname();
+  const router = useRouter();
   const id = pathname ? pathname.split("/").pop() : null;
   const [news, setNews] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isStudent, setIsStudent] = useState(false);
 
   useEffect(() => {
-    const fetchNews = async () => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        router.push("/auth/login");
+        return;
+      }
+
       try {
-        const querySnapshot = await getDocs(collection(db, "materials"));
-        const newsData = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        const foundNews = newsData.find((news) => news.id === id);
-        if (foundNews) {
-          setNews(foundNews);
+        const userRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userRef);
+
+        if (userDoc.exists() && userDoc.data()?.role === "siswa") {
+          setIsStudent(true);
         } else {
-          console.error("No such document!");
+          router.push("/auth/login");
         }
       } catch (error) {
-        console.error("Error fetching news:", error);
+        console.error("Error fetching user data:", error);
+        router.push("/auth/login");
       } finally {
         setLoading(false);
       }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
+
+  useEffect(() => {
+    const fetchNews = async () => {
+      if (id) {
+        try {
+          const querySnapshot = await getDocs(collection(db, "materials"));
+          const newsData = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          const foundNews = newsData.find((news) => news.id === id);
+          if (foundNews) {
+            setNews(foundNews);
+          } else {
+            console.error("No such document!");
+          }
+        } catch (error) {
+          console.error("Error fetching news:", error);
+        } finally {
+          setLoading(false);
+        }
+      }
     };
 
-    if (id) {
+    if (id && isStudent) {
       fetchNews();
     }
-  }, [id]);
+  }, [id, isStudent]);
 
   if (loading) {
     return (
@@ -53,6 +85,10 @@ const NewsDetail = () => {
         <p>Loading...</p>
       </div>
     );
+  }
+
+  if (!isStudent) {
+    return <div>You are not authorized to view this page.</div>;
   }
 
   if (!news) {

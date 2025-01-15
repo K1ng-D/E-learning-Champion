@@ -1,7 +1,15 @@
 "use client";
-import { useState } from "react";
-import { getFirestore, collection, addDoc } from "firebase/firestore";
-import { app } from "../../../../lib/firebaseConfig";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDoc,
+  doc,
+} from "firebase/firestore";
+import { auth, app } from "../../../../lib/firebaseConfig";
+import { onAuthStateChanged } from "firebase/auth";
 
 const db = getFirestore(app);
 
@@ -11,8 +19,29 @@ const UploadMaterial = () => {
   const [description, setDescription] = useState("");
   const [videoLink, setVideoLink] = useState("");
   const [image, setImage] = useState<File | null>(null);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const router = useRouter();
 
-  // Fungsi upload gambar ke Cloudinary
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const userRef = collection(db, "users");
+        const userDoc = await getDoc(doc(userRef, user.uid));
+
+        if (userDoc.exists() && userDoc.data().role === "guru") {
+          setIsAuthorized(true);
+        } else {
+          alert("Anda tidak memiliki izin untuk mengakses halaman ini.");
+          router.push("/auth/login");
+        }
+      } else {
+        router.push("/auth/login");
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
+
   const handleImageUpload = async () => {
     if (!image) {
       alert("Gambar belum dipilih!");
@@ -34,14 +63,8 @@ const UploadMaterial = () => {
         }
       );
 
-      if (!res.ok) {
-        throw new Error("Gagal mengunggah ke Cloudinary");
-      }
-
+      if (!res.ok) throw new Error("Gagal mengunggah ke Cloudinary");
       const data = await res.json();
-      if (!data.secure_url) {
-        throw new Error("URL gambar tidak ditemukan");
-      }
       return data.secure_url;
     } catch (error) {
       console.error("Error uploading to Cloudinary:", error);
@@ -50,16 +73,13 @@ const UploadMaterial = () => {
     }
   };
 
-  // Fungsi untuk mengunggah data ke Firestore
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isAuthorized) return alert("Anda tidak diizinkan mengunggah materi.");
+
     try {
       const imageUrl = await handleImageUpload();
-
-      if (!imageUrl) {
-        alert("Upload gambar gagal, coba lagi.");
-        return;
-      }
+      if (!imageUrl) return;
 
       await addDoc(collection(db, "materials"), {
         title,
@@ -71,7 +91,6 @@ const UploadMaterial = () => {
       });
 
       alert("Materi berhasil diunggah!");
-      // Reset form
       setTitle("");
       setLecturer("");
       setDescription("");
@@ -83,11 +102,12 @@ const UploadMaterial = () => {
     }
   };
 
+  if (!isAuthorized) return <p>Loading...</p>;
+
   return (
-    <div className="p-8 pt-16 md:pl-[270px] w-full h-screen mx-auto bg-white shadow-lg rounded-lg">
+    <div className="p-8 pt-16 md:pl-[270px] w-full h-screen mx-auto shadow-lg rounded-lg">
       <h1 className="text-2xl font-bold mb-4">Unggah Materi Pembelajaran</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Input Judul */}
         <input
           type="text"
           placeholder="Judul Materi"
@@ -96,7 +116,6 @@ const UploadMaterial = () => {
           className="w-full p-2 border rounded-lg"
           required
         />
-        {/* Input Nama Dosen */}
         <input
           type="text"
           placeholder="Nama Guru"
@@ -105,7 +124,6 @@ const UploadMaterial = () => {
           className="w-full p-2 border rounded-lg"
           required
         />
-        {/* Input Deskripsi */}
         <textarea
           placeholder="Deskripsi"
           value={description}
@@ -113,7 +131,6 @@ const UploadMaterial = () => {
           className="w-full p-2 border rounded-lg"
           required
         />
-        {/* Input Link Video */}
         <input
           type="url"
           placeholder="Link Video Pembelajaran"
@@ -122,7 +139,6 @@ const UploadMaterial = () => {
           className="w-full p-2 border rounded-lg"
           required
         />
-        {/* Input Upload Gambar */}
         <input
           type="file"
           accept="image/*"
@@ -130,7 +146,6 @@ const UploadMaterial = () => {
           className="w-full p-2 border rounded-lg"
           required
         />
-        {/* Tombol Submit */}
         <button
           type="submit"
           className="w-full bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-700"

@@ -1,7 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-import { db } from "../../../../lib/firebaseConfig";
-import { collection, getDocs } from "firebase/firestore";
+import { useRouter } from "next/navigation";
+import { auth, db } from "../../../../lib/firebaseConfig";
+import { onAuthStateChanged } from "firebase/auth";
+import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 
 // Definisikan tipe untuk ZoomLink
 interface ZoomLink {
@@ -14,29 +16,50 @@ interface ZoomLink {
 export default function Diskusi() {
   const [loading, setLoading] = useState(true);
   const [zoomLinks, setZoomLinks] = useState<ZoomLink[]>([]);
+  const [isSiswa, setIsSiswa] = useState(false); // Cek jika user adalah siswa
+  const router = useRouter();
 
   useEffect(() => {
-    const fetchZoomLinks = async () => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        router.push("/auth/login");
+        return;
+      }
+
       try {
-        // Ambil data dari koleksi "zoomLinks"
-        const zoomLinksSnapshot = await getDocs(collection(db, "ZoomLink"));
-        const zoomLinksData: ZoomLink[] = [];
-        zoomLinksSnapshot.forEach((doc) => {
-          zoomLinksData.push({ id: doc.id, ...doc.data() } as ZoomLink);
-        });
-        setZoomLinks(zoomLinksData);
+        const userRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userRef);
+
+        if (userDoc.exists() && userDoc.data()?.role === "siswa") {
+          setIsSiswa(true);
+
+          // Ambil data ZoomLink hanya jika user adalah siswa
+          const zoomLinksSnapshot = await getDocs(collection(db, "ZoomLink"));
+          const zoomLinksData: ZoomLink[] = [];
+          zoomLinksSnapshot.forEach((doc) => {
+            zoomLinksData.push({ id: doc.id, ...doc.data() } as ZoomLink);
+          });
+          setZoomLinks(zoomLinksData);
+        } else {
+          router.push("/auth/login");
+        }
       } catch (error) {
-        console.error("Error fetching Zoom links:", error);
+        console.error("Error fetching user data:", error);
+        router.push("/auth/login");
       } finally {
         setLoading(false);
       }
-    };
+    });
 
-    fetchZoomLinks();
-  }, []);
+    return () => unsubscribe();
+  }, [router]);
 
   if (loading) {
     return <p>Loading...</p>;
+  }
+
+  if (!isSiswa) {
+    return <p>You are not authorized to view this page.</p>;
   }
 
   return (

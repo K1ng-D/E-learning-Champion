@@ -1,5 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { auth, db } from "../../../../lib/firebaseConfig";
+import { onAuthStateChanged } from "firebase/auth";
 import {
   getFirestore,
   collection,
@@ -9,8 +12,8 @@ import {
   doc,
   updateDoc,
   deleteDoc,
+  getDoc,
 } from "firebase/firestore";
-import { app } from "../../../../lib/firebaseConfig";
 
 type User = {
   uid: string;
@@ -23,42 +26,57 @@ const UsersPage = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      const db = getFirestore(app);
-      const usersCollection = collection(db, "users");
-      const q = query(usersCollection, where("role", "==", "siswa"));
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        router.push("/auth/login");
+        return;
+      }
 
-      const querySnapshot = await getDocs(q);
-      const fetchedUsers: User[] = [];
+      const db = getFirestore();
+      const userRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userRef);
 
-      querySnapshot.forEach((doc) => {
-        const userData = doc.data();
-        fetchedUsers.push({
-          uid: doc.id,
-          email: userData.email,
-          name: userData.name || "-",
-          role: userData.role || "siswa",
+      if (userDoc.exists() && userDoc.data().role === "guru") {
+        setIsAuthorized(true);
+        const usersCollection = collection(db, "users");
+        const q = query(usersCollection, where("role", "==", "siswa"));
+
+        const querySnapshot = await getDocs(q);
+        const fetchedUsers: User[] = [];
+
+        querySnapshot.forEach((doc) => {
+          const userData = doc.data();
+          fetchedUsers.push({
+            uid: doc.id,
+            email: userData.email,
+            name: userData.name || "-",
+            role: userData.role || "siswa",
+          });
         });
-      });
 
-      setUsers(fetchedUsers);
-      setLoading(false);
-    };
+        setUsers(fetchedUsers);
+        setLoading(false);
+      } else {
+        router.push("/auth/login");
+      }
+    });
 
-    fetchUsers();
-  }, []);
+    return () => unsubscribe();
+  }, [router]);
 
   const handleDelete = async (uid: string) => {
-    const db = getFirestore(app);
+    const db = getFirestore();
     await deleteDoc(doc(db, "users", uid));
     setUsers(users.filter((user) => user.uid !== uid));
   };
 
   const handleEdit = async () => {
     if (editingUser) {
-      const db = getFirestore(app);
+      const db = getFirestore();
       const userRef = doc(db, "users", editingUser.uid);
       await updateDoc(userRef, {
         name: editingUser.name,
@@ -73,6 +91,10 @@ const UsersPage = () => {
 
   if (loading) {
     return <div>Loading...</div>;
+  }
+
+  if (!isAuthorized) {
+    return <div>You are not authorized to view this page.</div>;
   }
 
   return (

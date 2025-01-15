@@ -1,7 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-import { db } from "../../../../lib/firebaseConfig";
-import { collection, getDocs } from "firebase/firestore";
+import { useRouter } from "next/navigation";
+import { auth, db } from "../../../../lib/firebaseConfig";
+import { onAuthStateChanged } from "firebase/auth";
+import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import Link from "next/link";
 
 // Definisikan tipe untuk materi
@@ -17,6 +19,8 @@ interface Materi {
 export default function MaterialView() {
   const [loading, setLoading] = useState(true);
   const [materiList, setMateriList] = useState<Materi[]>([]);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const router = useRouter();
 
   const truncateDescription = (description: string, charLimit: number = 20) =>
     description.length > charLimit
@@ -24,26 +28,48 @@ export default function MaterialView() {
       : description;
 
   useEffect(() => {
-    const fetchData = async () => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        router.push("/auth/login");
+        return;
+      }
+
       try {
-        const materiSnapshot = await getDocs(collection(db, "materials"));
-        const materiListData: Materi[] = [];
-        materiSnapshot.forEach((doc) => {
-          materiListData.push({ id: doc.id, ...doc.data() } as Materi);
-        });
-        setMateriList(materiListData);
+        const userRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userRef);
+
+        if (userDoc.exists() && userDoc.data()?.role === "siswa") {
+          setIsAuthorized(true);
+
+          // Ambil data materi hanya jika authorized
+          const materiSnapshot = await getDocs(collection(db, "materials"));
+          const materiListData: Materi[] = [];
+          materiSnapshot.forEach((doc) => {
+            materiListData.push({ id: doc.id, ...doc.data() } as Materi);
+          });
+          setMateriList(materiListData);
+        } else {
+          router.push("/auth/login");
+          return;
+        }
       } catch (error) {
-        console.error("Error fetching materi data:", error);
+        console.error("Error fetching user data:", error);
+        router.push("/auth/login");
+        return;
       } finally {
         setLoading(false);
       }
-    };
+    });
 
-    fetchData();
-  }, []);
+    return () => unsubscribe();
+  }, [router]);
 
   if (loading) {
     return <p>Loading...</p>;
+  }
+
+  if (!isAuthorized) {
+    return <p>You are not authorized to view this page.</p>;
   }
 
   return (

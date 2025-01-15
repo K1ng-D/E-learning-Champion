@@ -1,7 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
-import { db } from "../../../../lib/firebaseConfig";
+import { useRouter } from "next/navigation";
+import { db, auth } from "../../../../lib/firebaseConfig";
 import { collection, getDocs, addDoc } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 
 // Definisikan tipe untuk ZoomLink
 interface LinkZoom {
@@ -18,24 +21,37 @@ export default function Diskusi() {
     description: "",
     zoomlink: "",
   });
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
-  // Ambil data ZoomLink dari Firestore
+  // Autentikasi dan otorisasi pengguna
   useEffect(() => {
-    const fetchMessages = async () => {
-      const querySnapshot = await getDocs(collection(db, "ZoomLink"));
-      const messagesList: LinkZoom[] = [];
-      querySnapshot.forEach((doc) => {
-        messagesList.push({
-          id: doc.id,
-          title: doc.data().title,
-          description: doc.data().description,
-          zoomlink: doc.data().zoomlink,
-        });
-      });
-      setMessages(messagesList);
-    };
-    fetchMessages();
-  }, []);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const userRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userRef);
+
+        if (userDoc.exists() && userDoc.data().role === "guru") {
+          setIsAuthorized(true);
+          const querySnapshot = await getDocs(collection(db, "ZoomLink"));
+          const messagesList: LinkZoom[] = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          })) as LinkZoom[];
+          setMessages(messagesList);
+        } else {
+          alert("Anda tidak memiliki akses!");
+          router.push("/auth/login");
+        }
+      } else {
+        router.push("/auth/login");
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [router]);
 
   // Kirim data ZoomLink baru ke Firestore
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,6 +65,10 @@ export default function Diskusi() {
       setNewMessage({ title: "", description: "", zoomlink: "" });
     }
   };
+
+  if (loading) return <p>Loading...</p>;
+  if (!isAuthorized)
+    return <p>Anda tidak memiliki izin untuk mengakses halaman ini.</p>;
 
   return (
     <div className="container pt-16 md:pl-[270px] mx-auto p-4">
