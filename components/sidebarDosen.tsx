@@ -36,7 +36,7 @@ export function SidebarDosen() {
             { href: "/dashboard/dosen", label: "Dashboard" },
             {
               href: "/dashboard/dosen/daftar-mahasiswa",
-              label: "Daftar Mahasiswa",
+              label: "Daftar Siswa-Siswi",
             },
             {
               href: "/dashboard/dosen/materi-pembelajaran",
