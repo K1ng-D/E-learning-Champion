@@ -41,7 +41,6 @@ export default function MaterialView() {
         if (userDoc.exists() && userDoc.data()?.role === "siswa") {
           setIsAuthorized(true);
 
-          // Ambil data materi hanya jika authorized
           const materiSnapshot = await getDocs(collection(db, "materials"));
           const materiListData: Materi[] = [];
           materiSnapshot.forEach((doc) => {

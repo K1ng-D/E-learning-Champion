@@ -8,25 +8,22 @@ export default function RegisterView() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("siswa");
-  const [name, setName] = useState(""); // Tambahkan state untuk nama
+  const [name, setName] = useState("");
 
   const handleRegister = async () => {
     try {
-      // Membuat akun pengguna baru
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
         password
       );
 
-      // Menyimpan data pengguna ke Firestore dengan nama, email, dan role
       await setDoc(doc(db, "users", userCredential.user.uid), {
         name,
         email,
         role,
       });
 
-      // Redirect ke halaman login setelah berhasil mendaftar
       window.location.href = "/auth/login";
     } catch (error) {
       console.error(error);
@@ -45,7 +42,7 @@ export default function RegisterView() {
           <input
             type="text"
             value={name}
-            onChange={(e) => setName(e.target.value)} // Menangani perubahan nama
+            onChange={(e) => setName(e.target.value)}
             placeholder="Nama"
             className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />

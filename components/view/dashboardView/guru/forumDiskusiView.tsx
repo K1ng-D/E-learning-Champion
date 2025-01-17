@@ -6,7 +6,6 @@ import { collection, getDocs, addDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 
-// Definisikan tipe untuk ZoomLink
 interface LinkZoom {
   id: string;
   title: string;
@@ -25,7 +24,6 @@ export default function Diskusi() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // Autentikasi dan otorisasi pengguna
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -53,7 +51,6 @@ export default function Diskusi() {
     return () => unsubscribe();
   }, [router]);
 
-  // Kirim data ZoomLink baru ke Firestore
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (

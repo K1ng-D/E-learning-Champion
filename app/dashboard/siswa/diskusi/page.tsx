@@ -33,7 +33,6 @@ export default function Diskusi() {
         if (userDoc.exists() && userDoc.data()?.role === "siswa") {
           setIsSiswa(true);
 
-          // Ambil data ZoomLink hanya jika user adalah siswa
           const zoomLinksSnapshot = await getDocs(collection(db, "ZoomLink"));
           const zoomLinksData: ZoomLink[] = [];
           zoomLinksSnapshot.forEach((doc) => {

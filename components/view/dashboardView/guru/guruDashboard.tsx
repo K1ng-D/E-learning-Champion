@@ -11,7 +11,6 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 
-// Definisikan tipe untuk materi dan ZoomLink
 interface Materi {
   id: string;
   title: string;
@@ -25,7 +24,7 @@ interface ZoomLink {
   id: string;
   zoomlink: string;
   title: string;
-  description: string; // Add description to ZoomLink
+  description: string;
 }
 
 export default function GuruDashboard() {
@@ -40,7 +39,6 @@ export default function GuruDashboard() {
     router.push("/auth/login");
   };
 
-  // Fungsi untuk memotong deskripsi menjadi batas karakter tertentu dan menambahkan "..."
   const truncateDescription = (description: string, charLimit: number = 20) => {
     return description.length > charLimit
       ? `${description.substring(0, charLimit)}...`
@@ -61,7 +59,6 @@ export default function GuruDashboard() {
         if (userDoc.exists() && userDoc.data()?.role === "guru") {
           setIsAuthorized(true);
 
-          // Ambil data materi dan ZoomLink hanya jika authorized
           const materiSnapshot = await getDocs(collection(db, "materials"));
           const materiListData: Materi[] = materiSnapshot.docs.map(
             (doc) => ({ id: doc.id, ...doc.data() } as Materi)
@@ -89,7 +86,6 @@ export default function GuruDashboard() {
     return () => unsubscribe();
   }, [router]);
 
-  // Fungsi untuk menghapus materi
   const handleDeleteMateri = async (id: string) => {
     try {
       await deleteDoc(doc(db, "materials", id));
@@ -99,7 +95,6 @@ export default function GuruDashboard() {
     }
   };
 
-  // Fungsi untuk menghapus Zoom link
   const handleDeleteZoomLink = async (id: string) => {
     try {
       await deleteDoc(doc(db, "ZoomLink", id));
@@ -109,15 +104,11 @@ export default function GuruDashboard() {
     }
   };
 
-  // Fungsi untuk mengedit materi
   const handleEditMateri = (materi: Materi) => {
-    // Pindahkan ke halaman edit atau tampilkan modal untuk mengedit materi
     console.log("Edit materi", materi);
   };
 
-  // Fungsi untuk mengedit Zoom link
   const handleEditZoomLink = (zoomLink: ZoomLink) => {
-    // Pindahkan ke halaman edit atau tampilkan modal untuk mengedit Zoom link
     console.log("Edit Zoom link", zoomLink);
   };
 
